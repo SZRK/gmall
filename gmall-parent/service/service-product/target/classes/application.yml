@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: service-productyc
+  profiles:
+    active: dev
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 120.25.152.10:8848
