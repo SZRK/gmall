@@ -8,6 +8,8 @@
         <module>model</module>
         <module>service</module>
         <module>server-gateway</module>
+        <module>web</module>
+        <module>service-clien</module>
     </modules>
 
     <parent>

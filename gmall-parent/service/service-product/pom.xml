@@ -12,6 +12,7 @@
     <artifactId>service-product</artifactId>
     <packaging>jar</packaging>
 
+    <!-- FastDFS文件系统相关组件-->
     <dependencies>
         <dependency>
             <groupId>net.oschina.zcx7878</groupId>

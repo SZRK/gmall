@@ -46,6 +46,5 @@ public class BaseCategoryView extends BaseEntity {
 	@ApiModelProperty(value = "三级分类名称")
 	@TableField("category3_name")
 	private String category3Name;
-
 }
 

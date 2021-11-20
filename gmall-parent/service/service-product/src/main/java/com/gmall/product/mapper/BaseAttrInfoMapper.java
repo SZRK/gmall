@@ -11,7 +11,8 @@ import java.util.List;
 @Mapper
 @Repository
 public interface BaseAttrInfoMapper extends BaseMapper<BaseAttrInfo> {
+
     List<BaseAttrInfo> selectBaseAttrInfoList(@Param("category1Id") Long category1Id
-                                              ,@Param("category2Id")Long category2Id
-                                              ,@Param("category3Id")Long category3Id);
+                                              , @Param("category2Id")Long category2Id
+                                              , @Param("category3Id")Long category3Id);
 }

@@ -4,13 +4,14 @@ server:
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    auto-mapping-behavior: full
   mapper-locations: classpath:com/gmall/product/mapper/*.xml
 
 spring:
   cloud:
     sentinel:
       transport:
-        dashboard: http://123.56.169.209:8858
+        dashboard: 123.56.169.209:8858
   rabbitmq:
     host: 123.56.169.209
     port: 5672

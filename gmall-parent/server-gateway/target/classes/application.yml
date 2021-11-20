@@ -2,7 +2,7 @@ server:
   port: 80
 spring:
   application:
-    name: api-gateway
+    name: api-gateway_yc
   cloud:
     nacos:
       discovery:
@@ -16,3 +16,11 @@ spring:
           uri: lb://service-productyc
           predicates:
             - Path=/*/product/** # 路径匹配
+#        - id: service-itemyc
+#          uri: lb://service-itemyc
+#          predicates:
+#            - Path=/*/item/** # 路径匹配
+        - id: web-allyc
+          uri: lb://web-allyc
+          predicates:
+            - Host=**.gmall.com #一个Host匹配

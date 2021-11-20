@@ -22,7 +22,7 @@ export default {
   onSale(skuId) {
     return request({
       url: `/admin/product/onSale/${skuId}`,
-      method: 'get'
+      method: 'put'
     })
   },
 
@@ -30,7 +30,7 @@ export default {
   cancelSale(skuId) {
     return request({
       url: `/admin/product/cancelSale/${skuId}`,
-      method: 'get'
+      method: 'put'
     })
   }
 }

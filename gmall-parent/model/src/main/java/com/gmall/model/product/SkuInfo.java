@@ -23,7 +23,8 @@ import java.util.List;
 public class SkuInfo extends BaseEntity {
 	
 	private static final long serialVersionUID = 1L;
-	
+	public static final Integer ONSALE = 1;
+	public static final Integer  CANCELSALE = 0;
 	@ApiModelProperty(value = "商品id")
 	@TableField("spu_id")
 	private Long spuId;

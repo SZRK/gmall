@@ -4,10 +4,10 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.gmall.product.mapper.BaseAttrInfoMapper">
 
-    <resultMap id="BaseAttrInfoListMap" type="com.gmall.model.product.BaseAttrInfo" autoMapping="true">
+    <resultMap id="BaseAttrInfoListMap" type="com.gmall.model.product.BaseAttrInfo">
         <id property="id" column="id"></id>
 
-        <collection property="attrValueList" ofType="com.gmall.model.product.BaseAttrValue" autoMapping="true">
+        <collection property="attrValueList" ofType="com.gmall.model.product.BaseAttrValue">
             <id property="id" column="attr_value_id"></id>
         </collection>
     </resultMap>
@@ -22,16 +22,17 @@
         bav.value_name,
         bav.attr_id
         from base_attr_info bai
-        inner join base_attr_value bav ON bai.id = bav.attr_id
+        inner join base_attr_value bav
+        ON bai.id = bav.attr_id
         <where>
             <if test="category1Id != 0 and category1Id != null">
-                or ( bai.category_id = #{category1Id} and category_level = 1)
+                ( bai.category_id = #{category1Id} and bai.category_level = 1)
             </if>
             <if test="category2Id != 0 and category2Id != null">
-                or  (bai.category_id = #{category2Id} and category_level = 2)
+                or  (bai.category_id = #{category2Id} and bai.category_level = 2)
             </if>
             <if test="category3Id != 0 and category3Id != null">
-                or  (bai.category_id = #{category3Id} and category_level = 3)
+                or  (bai.category_id = #{category3Id} and bai.category_level = 3)
             </if>
         </where>
         order by bai.category_level, bai.id

@@ -23,6 +23,7 @@ public class CorsConfig {
         configurationSource.registerCorsConfiguration("/**", configuration);
         // cors过滤器对象
         return new CorsWebFilter(configurationSource);
+
     }
 
 }
