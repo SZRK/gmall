@@ -3,20 +3,30 @@ package com.gmall.product.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.gmall.common.constant.RedisConst;
+import com.gmall.common.gmallannotation.GmallCache;
 import com.gmall.model.product.*;
 import com.gmall.product.mapper.*;
 import com.gmall.product.service.ManageService;
 import com.gmall.product.utils.FastDFSUtils;
+import org.aspectj.weaver.ast.Var;
+import org.redisson.Redisson;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class ManageServiceImpl implements ManageService {
@@ -66,7 +76,15 @@ public class ManageServiceImpl implements ManageService {
     private SkuSaleAttrValueMapper skuSaleAttrValueMapper;
 
     @Autowired
-    private BaseCategoryViewMapper BaseCategoryViewMapper;
+    private BaseCategoryViewMapper baseCategoryViewMapper;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
+
+    @Autowired
+    private RedissonClient redissonClient;
+
+
     // 获取一级分类
     @Override
     public List<BaseCategory1> getCategory1() {
@@ -300,24 +318,92 @@ public class ManageServiceImpl implements ManageService {
     }
 
     // 根据skuId获取sku信息
+    // 进阶添加redis缓存
+    /**
+     * 1.先查询redis缓存，redis缓存有直接返回。
+     * 2.redis缓存没有查询数据库。
+    *  --|2.1：数据库有将查询到的数据放入到redis缓存中并设置随机过期时间，防止缓存雪崩
+     * --|2.2：数据库没有则保存null值到redis缓存中，防止小范围缓存穿透，（布隆过滤器）
+     * 3.解决缓存击穿：
+     * --|3.1：加分布式锁，
+     * 注意事项
+     * --|1：互斥性（redis的setnx命令）
+     * --|2：可重入性 （redisson底层完成）
+     * --|3：防死锁：
+     *  --|3.1：在finally块中进行解锁
+     *  --|3.2：设置锁的过期时间
+     * --|不能解除其他人的锁
+     * --|过期时间内续约
+     * @param skuId
+     * @return
+     */
     @Override
     public SkuInfo getSkuInfo(Long skuId) {
-        // 查询图片信息
-        List<SkuImage> list = skuImageMapper.selectList(new QueryWrapper<SkuImage>().eq("sku_id", skuId));
         // 查询sku信息
-        SkuInfo skuInfo = skuInfoMapper.selectById(skuId);
-        skuInfo.setSkuImageList(list);
+        //1: 查询redis缓存，
+        String cacheKey = RedisConst.SKUKEY_PREFIX + skuId + RedisConst.SKUKEY_SUFFIX; // 获取key
+        SkuInfo skuInfo = (SkuInfo) redisTemplate.opsForValue().get(cacheKey);
+        if (null == skuInfo) {
+            // redis中没有数据 去数据库中查询数据, *此时可能出现缓存击穿问题，需要使用分布式锁
+            String lockKey = RedisConst.SKUKEY_PREFIX + skuId + RedisConst.SKULOCK_SUFFIX;
+            String lockValue = UUID.randomUUID().toString() + Thread.currentThread().getName();
+            // 尝试获取锁， 防止死锁需要加过期时间。还需要添加唯一Id，防止解锁的时候解除了别人的锁
+            // 改进 使用redisson
+            RLock lock = redissonClient.getLock(lockKey);
+          /*
+            Boolean isLock = redisTemplate.opsForValue().setIfAbsent(lockKey, lockValue,
+              RedisConst.SKULOCK_EXPIRE_PX2, TimeUnit.SECONDS);*/
+            try {
+                if (lock.tryLock(RedisConst.SKULOCK_EXPIRE_PX1, RedisConst.SKULOCK_EXPIRE_PX2, TimeUnit.SECONDS)) {
+                    try {
+                        // 获取到锁
+                        skuInfo = skuInfoMapper.selectById(skuId);
+                        if (null != skuInfo) {
+                            // 查询图片信息
+                            List<SkuImage> list = skuImageMapper.selectList(new QueryWrapper<SkuImage>().eq("sku_id", skuId));
+                            skuInfo.setSkuImageList(list);
+                            // 将数据保存到redis缓存中,为了防止缓存雪崩，还需要差异过期时间
+                            redisTemplate.opsForValue().set(cacheKey, skuInfo,
+                                    RedisConst.SKUKEY_TIMEOUT + new Random().nextInt(300), TimeUnit.SECONDS);
+                        } else {
+                            // 数据库中也没有数据, 保存null值，防止缓存穿透
+                            redisTemplate.opsForValue().set(cacheKey, new SkuInfo(),
+                                    RedisConst.SKUKEY_TIMEOUT, TimeUnit.SECONDS);
+                        }
+
+                    } finally {
+                        // 解锁操作， 解锁操作必须保证原子性及不能解除别人的锁,使用哪个lua脚本
+                      /*  String script = "if redis.call('get', KEYS[1]) == ARGV[1] then return tostring(redis.call('del',KEYS[1])) else return 0 end";
+                        //执行此脚本    Redis是单线程 （Redis自己就是原子性
+                        this.redisTemplate.execute(new DefaultRedisScript<>(script), Collections.singletonList(lockKey), lockValue);*/
+                        lock.unlock();
+                    }
+                } else {
+                    // 没有获取到锁，阻塞一会儿再来获取缓存中的数据
+                    try {
+                        TimeUnit.SECONDS.sleep(2);
+                    } catch (InterruptedException ex) {
+                        ex.printStackTrace();
+                    }
+                    skuInfo = (SkuInfo) redisTemplate.opsForValue().get(cacheKey);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         return skuInfo;
     }
 
     // 通过三级分类id查询分类信息
     @Override
+    @GmallCache(prefix = "getCategoryView")
     public BaseCategoryView getCategoryView(Long category3Id) {
-        return BaseCategoryViewMapper.selectOne(new QueryWrapper<BaseCategoryView>().eq("category3_id", category3Id));
+        return baseCategoryViewMapper.selectOne(new QueryWrapper<BaseCategoryView>().eq("category3_id", category3Id));
     }
 
     //获取sku最新价格
     @Override
+
     public BigDecimal getSkuPrice(Long skuId) {
         //方式一：
        /* SkuInfo skuInfo = skuInfoMapper.selectById(skuId);
@@ -338,12 +424,14 @@ public class ManageServiceImpl implements ManageService {
 
     // 根据spuId，skuId 查询销售属性集合
     @Override
+    @GmallCache(prefix = "selectSpuSaleAttrListCheckBySku")
     public List<SpuSaleAttr> selectSpuSaleAttrListCheckBySku(Long skuId, Long spuId) {
         List<SpuSaleAttr> list = spuSaleAttrMapper.getSpuSaleAttrListCheckBySku(skuId, spuId);
         return list;
     }
     // 根据spuId 查询map 集合属性
     @Override
+    @GmallCache(prefix = "getSkuValueIdsMap")
     public Map getSkuValueIdsMap(Long spuId) {
         List<Map> skuValueIdsMap = skuSaleAttrValueMapper.getSkuValueIdsMap(spuId);
 
@@ -354,6 +442,12 @@ public class ManageServiceImpl implements ManageService {
             });
         }
         return result;
+    }
+
+    // 查询分类视图中所有的分类数据
+    @Override
+    public List<BaseCategoryView> getBaseCategoryViewList() {
+        return baseCategoryViewMapper.selectList(null);
     }
 
 }

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
+import java.util.concurrent.ThreadPoolExecutor;
 
 @RestController
 @Api("商品详情")
@@ -18,6 +19,7 @@ public class ItemApiController {
 
     @Autowired
     private ItemService itemService;
+
 
     /**
      * 获取sku详情信息

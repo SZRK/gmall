@@ -78,9 +78,15 @@ public class ProdApiController {
     @ApiOperation("根据spuId 查询map 集合属性")
     @GetMapping("inner/getSaleAttrValuesBySpu/{spuId}")
     public Map getSaleAttrValuesBySpu(@PathVariable Long spuId) {
-        Map map= manageService.getSkuValueIdsMap(spuId);
+            Map map= manageService.getSkuValueIdsMap(spuId);
         return map;
     }
 
+    @ApiOperation("查询分类视图中所有的分类数据")
+    @GetMapping("inner/getBaseCategoryViewList")
+    public List<BaseCategoryView> getBaseCategoryViewList() {
+        List<BaseCategoryView> list = manageService.getBaseCategoryViewList();
+        return list;
+    }
 
 }

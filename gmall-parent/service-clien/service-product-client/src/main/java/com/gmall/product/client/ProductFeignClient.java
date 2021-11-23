@@ -53,7 +53,6 @@ public interface ProductFeignClient {
     public List<SpuSaleAttr> selectSpuSaleAttrListCheckBySku(@PathVariable Long spuId
             , @PathVariable Long skuId);
 
-
     /**
      * 根据spuId 查询map 集合属性
      * @param spuId
@@ -62,5 +61,8 @@ public interface ProductFeignClient {
     @ApiOperation("根据spuId 查询map 集合属性")
     @GetMapping("/api/product/inner/getSaleAttrValuesBySpu/{spuId}")
     public Map getSaleAttrValuesBySpu(@PathVariable Long spuId);
+
+    @GetMapping("/api/product/inner/getBaseCategoryViewList")
+    List<BaseCategoryView> getBaseCategoryViewList();
 
 }

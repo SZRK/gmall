@@ -29,4 +29,5 @@ public class ItemController {
         model.addAllAttributes(skuInfo);
         return "item/index";
     }
+
 }
