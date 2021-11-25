@@ -1,8 +1,6 @@
 package com.gmall.product.client;
 
-import com.gmall.model.product.BaseCategoryView;
-import com.gmall.model.product.SkuInfo;
-import com.gmall.model.product.SpuSaleAttr;
+import com.gmall.model.product.*;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -62,7 +60,17 @@ public interface ProductFeignClient {
     @GetMapping("/api/product/inner/getSaleAttrValuesBySpu/{spuId}")
     public Map getSaleAttrValuesBySpu(@PathVariable Long spuId);
 
+
+
     @GetMapping("/api/product/inner/getBaseCategoryViewList")
     List<BaseCategoryView> getBaseCategoryViewList();
+
+    @ApiOperation("查询品牌数据")
+    @GetMapping("/api/product/inner/getTrademark/{tmId}")
+    BaseTrademark getTrademark(@PathVariable long tmId);
+
+    @ApiOperation("查询库存属性对应的平台属性及属性值")
+    @GetMapping("/api/product/inner/getAttrAndAttrValueByskuId/{skuId}")
+    List<SkuAttrValue> getAttrAndAttrValueByskuId(@PathVariable Long skuId);
 
 }

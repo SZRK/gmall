@@ -43,8 +43,8 @@ public class GmallCacheAspect {
         // 获取注解信息
         GmallCache gmallCacheAnnotation = methodSignature.getMethod().getAnnotation(GmallCache.class);
         // 获取相应的缓存Key
-        String cacheKey = gmallCacheAnnotation.prefix() + Arrays.asList(args) + RedisConst.SKUKEY_SUFFIX;
-        String lockKey = gmallCacheAnnotation.prefix() + Arrays.asList(args) + RedisConst.SKULOCK_SUFFIX;
+        String cacheKey = gmallCacheAnnotation.prefix() + Arrays.asList(args) + RedisConst.SKUKEY_SUFFIX + "YC";
+        String lockKey = gmallCacheAnnotation.prefix() + Arrays.asList(args) + RedisConst.SKULOCK_SUFFIX + "YC";
         // 获取返回值类型
         Class returnType = methodSignature.getReturnType();
 

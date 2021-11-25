@@ -24,7 +24,6 @@ public class IndexController {
     private ProductFeignClient productFeignClient;
 
     // 静态化页面技术
-
     @GetMapping("/")
     public String toIndex(Model model) {
         List<Map> listMap = getCategoryViewMaps();

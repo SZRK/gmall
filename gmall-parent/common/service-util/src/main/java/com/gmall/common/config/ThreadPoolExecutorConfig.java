@@ -1,16 +1,18 @@
-package com.gmall.item.config;
+package com.gmall.common.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.concurrent.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 @Configuration
 public class ThreadPoolExecutorConfig {
 
     @Bean("threadPoolExecutor")
     public ThreadPoolExecutor getThreadPoolExecutor() {
-        Executors.newScheduledThreadPool(100);
         return new ThreadPoolExecutor(5,// 常驻核心线程数
                 10,// 最大工作线程数
                 2, // 没有工作的线程的存活时间

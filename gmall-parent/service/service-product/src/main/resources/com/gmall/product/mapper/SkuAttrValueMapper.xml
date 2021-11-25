@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gmall.product.mapper.SkuAttrValueMapper">
+
+    <resultMap id="getAttrAndAttrValueByskuIdMap" type="com.gmall.model.product.SkuAttrValue">
+        <id column="id" property="id"></id>
+        <association property="baseAttrInfo" javaType="com.gmall.model.product.BaseAttrInfo">
+            <id column="aiId" property="id"/>
+        </association>
+        <association property="baseAttrValue" javaType="com.gmall.model.product.BaseAttrValue">
+            <id column="avId" property="id"></id>
+        </association>
+    </resultMap>
+
+    <select id="getAttrAndAttrValueByskuId" resultMap="getAttrAndAttrValueByskuIdMap">
+        select
+            sav.id,
+            sav.attr_id,
+            bav.id avId,
+            bai.id aiId,
+            bai.attr_name,
+            bav.value_name
+        from sku_attr_value sav
+        inner join base_attr_info bai
+            on sav.attr_id = bai.id
+        inner join base_attr_value bav
+            on sav.value_id = bav.id
+        where sav.sku_id = #{skuId}
+    </select>
+
+</mapper>

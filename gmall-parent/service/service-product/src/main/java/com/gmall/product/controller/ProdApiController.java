@@ -1,8 +1,8 @@
 package com.gmall.product.controller;
 
+
 import com.gmall.model.product.*;
 import com.gmall.product.service.ManageService;
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -88,5 +88,21 @@ public class ProdApiController {
         List<BaseCategoryView> list = manageService.getBaseCategoryViewList();
         return list;
     }
+
+    @ApiOperation("查询品牌数据")
+    @GetMapping("inner/getTrademark/{tmId}")
+    public BaseTrademark getTrademark(@PathVariable long tmId) {
+        BaseTrademark baseTrademark = manageService.getTrademark(tmId);
+        return baseTrademark;
+    }
+
+    @ApiOperation("查询库存属性对应的平台属性及属性值")
+    @GetMapping("inner/getAttrAndAttrValueByskuId/{skuId}")
+    public List<SkuAttrValue> getAttrAndAttrValueByskuId(@PathVariable Long skuId) {
+        List<SkuAttrValue> list  = manageService.getAttrAndAttrValueByskuId(skuId);
+        return list;
+    }
+
+
 
 }

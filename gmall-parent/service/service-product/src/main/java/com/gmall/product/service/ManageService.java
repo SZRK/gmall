@@ -1,6 +1,7 @@
 package com.gmall.product.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.gmall.model.list.SearchAttr;
 import com.gmall.model.product.*;
 
 import java.math.BigDecimal;
@@ -67,4 +68,8 @@ public interface ManageService {
     Map getSkuValueIdsMap(Long spuId);
 
     List<BaseCategoryView> getBaseCategoryViewList();
+
+    BaseTrademark getTrademark(long tmId);
+
+    List<SkuAttrValue> getAttrAndAttrValueByskuId(Long skuId);
 }

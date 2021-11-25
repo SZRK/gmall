@@ -9,14 +9,10 @@ import com.gmall.model.product.*;
 import com.gmall.product.mapper.*;
 import com.gmall.product.service.ManageService;
 import com.gmall.product.utils.FastDFSUtils;
-import org.aspectj.weaver.ast.Var;
-import org.redisson.Redisson;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -24,8 +20,6 @@ import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -341,11 +335,11 @@ public class ManageServiceImpl implements ManageService {
     public SkuInfo getSkuInfo(Long skuId) {
         // 查询sku信息
         //1: 查询redis缓存，
-        String cacheKey = RedisConst.SKUKEY_PREFIX + skuId + RedisConst.SKUKEY_SUFFIX; // 获取key
+        String cacheKey = RedisConst.SKUKEY_PREFIX + skuId + RedisConst.SKUKEY_SUFFIX + "YC"; // 获取key
         SkuInfo skuInfo = (SkuInfo) redisTemplate.opsForValue().get(cacheKey);
         if (null == skuInfo) {
             // redis中没有数据 去数据库中查询数据, *此时可能出现缓存击穿问题，需要使用分布式锁
-            String lockKey = RedisConst.SKUKEY_PREFIX + skuId + RedisConst.SKULOCK_SUFFIX;
+            String lockKey = RedisConst.SKUKEY_PREFIX + skuId + RedisConst.SKULOCK_SUFFIX + "YC";
             String lockValue = UUID.randomUUID().toString() + Thread.currentThread().getName();
             // 尝试获取锁， 防止死锁需要加过期时间。还需要添加唯一Id，防止解锁的时候解除了别人的锁
             // 改进 使用redisson
@@ -433,8 +427,8 @@ public class ManageServiceImpl implements ManageService {
     @Override
     @GmallCache(prefix = "getSkuValueIdsMap")
     public Map getSkuValueIdsMap(Long spuId) {
-        List<Map> skuValueIdsMap = skuSaleAttrValueMapper.getSkuValueIdsMap(spuId);
 
+        List<Map> skuValueIdsMap = skuSaleAttrValueMapper.getSkuValueIdsMap(spuId);
         HashMap<Object, Object> result = new HashMap<>();
         if  (!CollectionUtils.isEmpty(skuValueIdsMap)) {
             skuValueIdsMap.forEach(map -> {
@@ -448,6 +442,19 @@ public class ManageServiceImpl implements ManageService {
     @Override
     public List<BaseCategoryView> getBaseCategoryViewList() {
         return baseCategoryViewMapper.selectList(null);
+    }
+
+    //查询品牌数据
+    @Override
+    public BaseTrademark getTrademark(long tmId) {
+        BaseTrademark baseTrademark = baseTrademarkMapper.selectById(tmId);
+        return baseTrademark;
+    }
+
+    // 查询库存属性对应的平台属性及属性值
+    @Override
+    public List<SkuAttrValue> getAttrAndAttrValueByskuId(Long skuId) {
+        return skuAttrValueMapper.getAttrAndAttrValueByskuId(skuId);
     }
 
 }
