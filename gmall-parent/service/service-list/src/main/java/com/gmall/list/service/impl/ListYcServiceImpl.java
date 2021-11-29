@@ -16,6 +16,7 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.Operator;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
@@ -156,7 +157,6 @@ public class ListYcServiceImpl implements ListYcService {
         // 进行查询
         try {
             SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
-            System.out.println();
             // 解析查询返回值
             SearchResponseVo searchResponseVo =   parseSearchResponse(searchResponse);
 
@@ -174,6 +174,7 @@ public class ListYcServiceImpl implements ListYcService {
         return null;
     }
 
+    // 解析搜索返回对象
     private SearchResponseVo parseSearchResponse(SearchResponse searchResponse) {
         SearchResponseVo searchResponseVo = new SearchResponseVo();
         // 封装返回数据
@@ -199,7 +200,7 @@ public class ListYcServiceImpl implements ListYcService {
           ParsedStringTerms tmNameAgg = bucket.getAggregations().get("tmNameAgg");
           srtVo.setTmName(tmNameAgg.getBuckets().get(0).getKeyAsString());
           // 获取tmLogoUrl属性值
-            ParsedStringTerms tmLogoUrlAgg = bucket.getAggregations().get("tmNameAgg");
+            ParsedStringTerms tmLogoUrlAgg = bucket.getAggregations().get("tmLogoUrlAgg");
           srtVo.setTmLogoUrl(tmLogoUrlAgg.getBuckets().get(0).getKeyAsString());
           return srtVo;
         }).collect(Collectors.toList());
@@ -226,6 +227,8 @@ public class ListYcServiceImpl implements ListYcService {
         return searchResponseVo;
 
     }
+
+    // 构建查询对象
     private SearchRequest buildSearchRequest(SearchParam searchParam) {
         SearchRequest searchRequest = new SearchRequest();
         // 相当于DSL中的{}
@@ -236,7 +239,7 @@ public class ListYcServiceImpl implements ListYcService {
         String keyword = searchParam.getKeyword();
         if (!StringUtils.isEmpty(keyword)) {
             // match : 对字段进行分词并做等值匹配
-            boolQueryBuilder.must(QueryBuilders.matchQuery("title", keyword));
+            boolQueryBuilder.must(QueryBuilders.matchQuery("title", keyword).operator(Operator.AND));
         } else {
             // 查询所有
             boolQueryBuilder.must(QueryBuilders.matchAllQuery());
@@ -262,8 +265,9 @@ public class ListYcServiceImpl implements ListYcService {
             String[] trademarkSplit = trademark.split(":");
             boolQueryBuilder.filter(QueryBuilders.termQuery("tmId", trademarkSplit[0]));
         }
-        // TODO 4.平台属性
+        //  4.平台属性
         String[] props = searchParam.getProps();
+        // props=1:4500-11999:价格
         if (null != props && props.length > 0) {
             for (String prop : props) {
                 BoolQueryBuilder subBoolQueryBuilder = QueryBuilders.boolQuery();
@@ -273,7 +277,7 @@ public class ListYcServiceImpl implements ListYcService {
                     subBoolQueryBuilder.filter(QueryBuilders.matchQuery("attrs.attrId", propSplit[0]));
                     subBoolQueryBuilder.filter(QueryBuilders.matchQuery("attrs.attrValue", propSplit[1]));
                 }
-                boolQueryBuilder.filter(QueryBuilders.nestedQuery("attr", subBoolQueryBuilder, ScoreMode.None));
+                boolQueryBuilder.filter(QueryBuilders.nestedQuery("attrs", subBoolQueryBuilder, ScoreMode.None));
             }
         }
         // 5.分页
@@ -287,7 +291,7 @@ public class ListYcServiceImpl implements ListYcService {
         String order = searchParam.getOrder();
         if (!StringUtils.isEmpty(order)) {
             //  order=1:asc  2 对应 价格
-            String[] orderSplit = order.split(order);
+            String[] orderSplit = order.split(":");
             String orderPara = null;
             switch (orderSplit[0]) {
                 case "1" : orderPara = "hotScore"; break;

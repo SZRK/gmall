@@ -20,7 +20,10 @@ import java.math.BigDecimal;
 public class CartInfo extends BaseEntity {
 	
 	private static final long serialVersionUID = 1L;
-	
+
+	public static final Integer ISCHECK = 1;
+	public static final Integer NOTCHECK = 0;
+
 	@ApiModelProperty(value = "用户id")
 	@TableField("user_id")
 	private String userId;

@@ -126,8 +126,10 @@
                                 价格<span th:if="${orderMap.type == '2'}" th:text="${orderMap.sort == 'asc' ? '↑' : '↓'}"></span>
                             </a>
                         </li>
-                        <li>
-                            <a href="#">新品</a>
+                        <li th:class="${orderMap.type == '3' ? 'active': ''}">
+                            <a th:href="${urlParam}+'&order=3:'+${orderMap.sort == 'asc' ? 'desc' : 'asc'}">
+                                新品<span th:if="${orderMap.type == '3'}" th:text="${orderMap.sort == 'asc' ? '↑' : '↓'}"></span>
+                            </a>
                         </li>
                         <li>
                             <a href="#">评价</a>

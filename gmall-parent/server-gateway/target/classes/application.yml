@@ -16,10 +16,10 @@ spring:
           uri: lb://service-productyc
           predicates:
             - Path=/*/product/** # 路径匹配
-#        - id: service-itemyc
-#          uri: lb://service-itemyc
-#          predicates:
-#            - Path=/*/item/** # 路径匹配
+        - id: service-useryc
+          uri: lb://service-useryc
+          predicates:
+            - Path=/*/user/** # 路径匹配
         - id: web-allyc
           uri: lb://web-allyc
           predicates:

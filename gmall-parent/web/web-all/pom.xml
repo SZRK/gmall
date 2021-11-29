@@ -22,6 +22,16 @@
             <version>1.0-SNAPSHOT</version>
             <artifactId>service-product-client</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.gmall</groupId>
+            <version>1.0-SNAPSHOT</version>
+            <artifactId>service-list-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.gmall</groupId>
+            <version>1.0-SNAPSHOT</version>
+            <artifactId>service-cart-client</artifactId>
+        </dependency>
     </dependencies>
     <build>
     <finalName>web-all</finalName>

@@ -16,11 +16,25 @@ spring:
           uri: lb://service-productyc
           predicates:
             - Path=/*/product/** # 路径匹配
-#        - id: service-itemyc
-#          uri: lb://service-itemyc
-#          predicates:
-#            - Path=/*/item/** # 路径匹配
+        - id: service-useryc
+          uri: lb://service-useryc
+          predicates:
+            - Path=/*/user/** # 路径匹配
         - id: web-allyc
           uri: lb://web-allyc
           predicates:
             - Host=**.gmall.com #一个Host匹配
+      redis:
+        host:  120.25.152.10
+        port: 6379
+        database: 0
+        timeout: 1800000
+        password:
+        lettuce:
+          pool:
+            max-active: 20 #最大连接数
+            max-wait: -1    #最大阻塞等待时间(负数表示没限制)
+            max-idle: 5    #最大空闲
+            min-idle: 0     #最小空闲
+login:
+  url: trade.html,order.html,pay.html,addCart.html

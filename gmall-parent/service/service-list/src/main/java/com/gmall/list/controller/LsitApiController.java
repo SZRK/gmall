@@ -44,7 +44,7 @@ public class LsitApiController {
 
     // 修改评分,利用redis缓存评分信息，待到达一定的评分是更新到es中
     @ApiOperation("更新商品评分")
-    @GetMapping("inner/incrHotScore/{skuId}")
+    @GetMapping("/incrHotScore/{skuId}")
     public Result incrHotScore(@PathVariable("skuId") Long skuId) {
         listYcService.incrHotScore(skuId);
         return Result.ok();
