@@ -249,146 +249,148 @@ public class ListServiceImpl implements ListService {
     }
 
     //构建搜索请求对象
+    private SearchRequest buildSearchRequest(SearchParam searchParam) {
 
-private SearchRequest buildSearchRequest(SearchParam searchParam) {
-        //1、创建搜索请求对象  DSL：GET goods/_search GET请求
+
+        //1:创建搜索请求对象  DSL: GET goods/_search  GET请求
         SearchRequest searchRequest = new SearchRequest();
-
-        //2、构建搜索资源对象 ： {}
+        //2:构建搜索资源对象
+        /**
+         * {
+         *
+         * }
+         */
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-
-        //组合查询条件的对象
+        //组合条件的对象
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-
-
-        //2.1 查询关键词
+        //2.1  查询关键词
         String keyword = searchParam.getKeyword();
-        if (!StringUtils.isEmpty(keyword)) {
-            //matchQuery ：先分词在模糊查询
-            //termQuety ： 精确查询
-            boolQueryBuilder.must(QueryBuilders.matchQuery("title", keyword)
+        if(!StringUtils.isEmpty(keyword)){
+            // query :  match 1）先分词  2）再等值匹配
+            boolQueryBuilder.must(QueryBuilders.matchQuery("title",keyword)
                     .operator(Operator.AND));
-        } else {
+            //"title": "我是中国人的手机    中国  国人 中国人  的  手机
+            /**
+             *  匹配的意义 ：   手机华为  手机 华为
+             *  match:  select * from 表 where
+             *                         (title == 中国 or title == 国人
+             *                          or title == 中国人
+             *                          or title == 的
+             *                          or title == 手机)
+             *                          and
+             *                          (category1Id=2)
+             *
+             *    and:DSL语句中 must
+             *    or:DSL语句中 should
+             *    not:DSL语句中 must_not
+             *
+             *
+             */
+        }else{
             //没有关键词
-            //查询全部索引库
+            //查询所有
             boolQueryBuilder.must(QueryBuilders.matchAllQuery());
         }
-
-        //2.2 查询一二三级分类 termQuety ： 精确查询
+        //2.2 查询 一二三级分类   精准查询    select * from 表 where categoryId = 61
         Long category1Id = searchParam.getCategory1Id();
-        if (category1Id != null) {
-            // k :域名  v :域值    filter == must
-            boolQueryBuilder.filter(QueryBuilders.termQuery("category1Id", category1Id));
+        if(null != category1Id){
+            // K : 域名   V: 域值  filter == must  and
+            boolQueryBuilder.filter(QueryBuilders.termQuery("category1Id",category1Id));
         }
-
         Long category2Id = searchParam.getCategory2Id();
-        if (category2Id != null) {
-            // k :域名  v :域值    filter == must
-            boolQueryBuilder.filter(QueryBuilders.termQuery("category2Id", category2Id));
+        if(null != category2Id){
+            // K : 域名   V: 域值  filter == must  and
+            boolQueryBuilder.filter(QueryBuilders.termQuery("category2Id",category2Id));
         }
-
         Long category3Id = searchParam.getCategory3Id();
-        if (category3Id != null) {
-            // k :域名  v :域值    filter == must
-            boolQueryBuilder.filter(QueryBuilders.termQuery("category3Id", category3Id));
+        if(null != category3Id){
+            // K : 域名   V: 域值  filter == must  and
+            boolQueryBuilder.filter(QueryBuilders.termQuery("category3Id",category3Id));
         }
-
-
-        //2.3 品牌搜索 精准查询  品牌ID：品牌名称
+        //2.3: 品牌 精准查询    品牌ID:品牌名称
         String trademark = searchParam.getTrademark();
-        if (!StringUtils.isEmpty(trademark)) {
-            String[] t = trademark.split(":"); //0 : id  1: 名称
-            boolQueryBuilder.filter(QueryBuilders.termQuery("tmId", t[0]));
+        if(!StringUtils.isEmpty(trademark)){
+            String[] t = trademark.split(":"); // 0:id  1:名称
+            boolQueryBuilder.filter(QueryBuilders.termQuery("tmId",t[0]));
         }
-
-        // 2.4 平台属性
+        //2.4 :平台属性  超难
+        //http://localhost:8090/path
+        // ?keyword=手机&props=23:4G:运行内存&props=24:1200万:摄像头像素
+        //Springmvc的课程了
         String[] props = searchParam.getProps();
-        if (props != null && props.length > 0) {
-            //props = 23:4G:运行内存  prop:平台属性ID：平台属性值：平台属性名称
+        if(null != props && props.length > 0){
+            //props=23:4G:运行内存   prop:平台属性ID:平台属性值:平台属性名称
             for (String prop : props) {
                 //子组合对象
                 BoolQueryBuilder subBoolQueryBuilder = QueryBuilders.boolQuery();
                 String[] p = prop.split(":");
-                if (p.length == 3) {
+                if(p.length == 3){
                     //过滤查询
-                    //平台属性ID
-                    subBoolQueryBuilder.must(QueryBuilders.termQuery("attrs.attrId", p[0]));
+                    // 平台属性ID
+                    subBoolQueryBuilder.must(
+                            QueryBuilders.termQuery("attrs.attrId",p[0]));
                     //平台属性值
-                    subBoolQueryBuilder.must(QueryBuilders.termQuery("attrs.attrValue", p[1]));
-                    //平台属性名称
-                    //subBoolQueryBuilder.filter(QueryBuilders.termQuery("attrs.attrName",p[2]));
+                    subBoolQueryBuilder.must(
+                            QueryBuilders.termQuery("attrs.attrValue",p[1]));
                 }
-                //父组合对象 添加 子组合对象 and
-                boolQueryBuilder.filter(QueryBuilders.nestedQuery(
-                        "attrs", subBoolQueryBuilder, ScoreMode.None));
+                //父组合对象 添加 子组合对象  and
+                boolQueryBuilder.filter(QueryBuilders.
+                        nestedQuery("attrs",subBoolQueryBuilder, ScoreMode.None));
             }
+
         }
-
-
-        //将组合查询条件对象放入searchSourceBuilder中
+        //将组合条件的对象放入到SearchSourceBuilder
         searchSourceBuilder.query(boolQueryBuilder);
-
-        //3、分页
+        //3.分页
         Integer pageNo = searchParam.getPageNo();
         Integer pageSize = searchParam.getPageSize();
-        searchSourceBuilder.from((pageNo - 1) * pageSize);//开始行
-        searchSourceBuilder.size(pageSize);//每页数
-
-        //4、排序   1：asc  1: desc   2:asc  2:desc ....
+        searchSourceBuilder.from((pageNo-1)*pageSize); //开始行
+        searchSourceBuilder.size(pageSize); //每页数
+        //4:排序   1:asc  1:desc  2:asc 2:desc ...
         String order = searchParam.getOrder();
-        if (!StringUtils.isEmpty(order)) {
-            String[] o = order.split(":");//2 0: 1
+        if(!StringUtils.isEmpty(order)){
+            String[] o = order.split(":");//2  0: 1:
             String field = "";
-            switch (o[0]) {
-                case "1":
-                    field = "hotScore";
-                    break;
-                case "2":
-                    field = "price";
-                    break;
-                case "3":
-                    field = "createTime";
-                    break;
+            switch (o[0]){
+                case "1" : field = "hotScore";break;
+                case "2" : field = "price";break;
+                case "3" : field = "createTime";break;
             }
-            //ES中排序
-            searchSourceBuilder.sort(field, "asc".equalsIgnoreCase(o[1]) ? SortOrder.ASC : SortOrder.DESC);
-        } else {
-            //默认是按照 综合 由高到低
+            //ES 中排序
+            searchSourceBuilder.sort(field,"asc".equalsIgnoreCase(o[1])?SortOrder.ASC:SortOrder.DESC);
+        }else{
+            //默认是按照 综合  由高到低
             searchSourceBuilder.sort("hotScore", SortOrder.DESC);
         }
-
-        //5、高亮
+        //5:高亮
         HighlightBuilder highlightBuilder = new HighlightBuilder();
         highlightBuilder.field("title")
-                .preTags("<font style='color:red>")
+                .preTags("<font style='color:red'>")
                 .postTags("</font>");
         searchSourceBuilder.highlighter(highlightBuilder);
 
-        //6、品牌的集合 使用桶聚合查询
-        searchSourceBuilder.aggregation(AggregationBuilders
-                .terms("tmIdAgg").field("tmId").size(100)
-                .subAggregation(AggregationBuilders.terms("tmNameAgg").field("tmName"))
-                .subAggregation(AggregationBuilders.terms("tmLogoUrlAgg").field("tmLogoUrl")));
-
-
-        //7、平台属性集合 使用桶聚会查询
-        searchSourceBuilder.aggregation(AggregationBuilders
-                .nested("attrsAgg", "attrs")
-                .subAggregation(AggregationBuilders.terms("attrIdAgg").field("attrs.attrId")
-                        .subAggregation(AggregationBuilders.terms("attrNameAgg").field("attrs.attrName"))
-                        .subAggregation(AggregationBuilders.terms("attrValueAgg").field("attrs.attrValue")))
+        //6:品牌的集合  使用桶聚合查询
+        searchSourceBuilder.aggregation(
+                AggregationBuilders.terms("tmIdAgg").field("tmId").size(100)
+                        .subAggregation(AggregationBuilders.terms("tmNameAgg").field("tmName"))
+                        .subAggregation(AggregationBuilders.terms("tmLogoUrlAgg").field("tmLogoUrl")));
+        //7:平台属性集合 使用桶聚合查询
+        searchSourceBuilder.aggregation(
+                AggregationBuilders.nested("attrsAgg","attrs")
+                        .subAggregation(AggregationBuilders.terms("attrIdAgg").field("attrs.attrId")
+                                .subAggregation(AggregationBuilders.terms("attrNameAgg").field("attrs.attrName"))
+                                .subAggregation(AggregationBuilders.terms("attrValueAgg").field("attrs.attrValue")))
         );
 
+        System.out.println("DSL:" + searchSourceBuilder.toString());
 
-        System.out.println("DSL语句 ： " + searchSourceBuilder.toString());
-
-
-        //6、将 {} 与  DSL：GET goods/_search GET请求 关联
+        //8：
         searchRequest.source(searchSourceBuilder);
-
-        //指定搜索的索引库
+        //指定索引库的名称   不指定查询所有索引库
+        //searchRequest.indices("goods","haha","hehe");
         searchRequest.indices("goods");
-
+        //指定type类型  ES7以上已经废弃了  可以不写了
+        //searchRequest.types("info","haha","hehe");
         //返回搜索请求对象
         return searchRequest;
     }
