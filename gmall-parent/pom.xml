@@ -10,7 +10,6 @@
         <module>server-gateway</module>
         <module>web</module>
         <module>service-clien</module>
-        <module>service-cart-client</module>
     </modules>
 
     <parent>

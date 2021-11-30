@@ -1,6 +1,5 @@
 server:
   port: 8206
-
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

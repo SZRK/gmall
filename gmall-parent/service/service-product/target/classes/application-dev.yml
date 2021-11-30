@@ -1,12 +1,10 @@
 server:
   port: 8206
-
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     auto-mapping-behavior: full
   mapper-locations: classpath:com/gmall/product/mapper/*.xml
-
 spring:
   cloud:
     sentinel:

@@ -15,6 +15,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
@@ -23,12 +24,14 @@ import reactor.core.publisher.Mono;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
+@Component
 public class LoginFilter implements GlobalFilter, Ordered {
 
     public static final String TOKEN = "token";
 
     public static final String LOGINURL = "http://passport.gmall.com/login.html?originUrl=";
 
+    public static final String USERTEMPID = "userTempId";
     @Autowired
     private RedisTemplate redisTemplate;
 
@@ -75,9 +78,26 @@ public class LoginFilter implements GlobalFilter, Ordered {
             //request.getHeaders().add("userId",userId);
             exchange.getRequest().mutate().header("userId", userId);
         }
+        //3:准备放行的时候  获取并传递临时Id
+        String userTempId = getUserTempId(exchange);
+        if(!StringUtils.isEmpty(userTempId)){
+            //request.getHeaders().add("userId",userId);
+            exchange.getRequest().mutate().header("userTempId", userTempId);
+        }
         // 放行
         return chain.filter(exchange);
 
+    }
+
+    private String getUserTempId(ServerWebExchange exchange) {
+        String userTempId = exchange.getRequest().getHeaders().getFirst(USERTEMPID);
+        if (StringUtils.isEmpty(userTempId)) {
+            HttpCookie cookie = exchange.getRequest().getCookies().getFirst(USERTEMPID);
+            if (null != cookie) {
+                userTempId = cookie.getValue();
+            }
+        }
+        return userTempId;
     }
 
     private Mono<Void> returnMesage(ServerWebExchange exchange, ResultCodeEnum resultCodeEnum) {
@@ -101,8 +121,8 @@ public class LoginFilter implements GlobalFilter, Ordered {
         if (!StringUtils.isEmpty(token)) {
             String redisToken = RedisConst.USER_LOGIN_KEY_PREFIX
                     + token + RedisConst.userinfoKey_suffix;
-            if (redisTemplate.hasKey(token)) {
-                return (String) redisTemplate.opsForValue().get(token);
+            if (redisTemplate.hasKey(redisToken)) {
+                return  redisTemplate.opsForValue().get(redisToken).toString();
             }
         }
         return null;

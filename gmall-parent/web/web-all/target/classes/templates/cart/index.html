@@ -70,7 +70,7 @@
         <div class="cart-tool">
             <div class="select-all">
                 <input class="chooseAll" type="checkbox"  name=""  value="" />
-                <span>全选</span>
+                <spanF>全选</spanF>
             </div>
             <div class="option">
                 <a href="/cart/deleteChecked">删除选中的商品</a>
@@ -428,7 +428,6 @@
                     window.location.href = 'http://passport.gmall.com/login.html?originUrl='+ encodeURIComponent(window.location.href)
                     return
                 }
-
                 var isChecked = 0
                 for(var i=0; i<this.data.length; i++) {
                     if (this.data[i].isChecked == 1) {

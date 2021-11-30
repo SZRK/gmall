@@ -2,6 +2,7 @@ package com.gmall.user.controller;
 
 import com.gmall.common.constant.RedisConst;
 import com.gmall.common.result.Result;
+import com.gmall.model.user.UserAddress;
 import com.gmall.model.user.UserInfo;
 import com.gmall.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -31,6 +33,7 @@ public class UserController {
         if (StringUtils.isEmpty(userInfo.getLoginName()) || StringUtils.isEmpty(userInfo.getPasswd())) {
             return Result.fail().message("用户名或密码不能为空");
         }
+
         // 查询数据库，校验用户名和密码
         userInfo = userService.login(userInfo);
         if (null != userInfo) {
@@ -42,10 +45,9 @@ public class UserController {
                     RedisConst.USERKEY_TIMEOUT, TimeUnit.SECONDS);
             Map<Object, Object> map = new HashMap<>();
             map.put("token", token);
-            map.put("nickName",userInfo.getNickName());// 昵称
+            map.put("nickName", userInfo.getNickName());// 昵称
             return Result.ok(map);
         }
-
         return Result.fail().message("用户名或密码输入有误");
     }
 
@@ -55,6 +57,12 @@ public class UserController {
                 request.getHeader("token") + RedisConst.userinfoKey_suffix;
         redisTemplate.delete(redisToken);
         return Result.ok();
+    }
+
+    // 获取用户的收货地址
+    @GetMapping("inner/findUserAddressListByUserId/{userId}")
+    public List<UserAddress> getUserAddressList(@PathVariable String userId) {
+       return userService.getUserAddressList(userId);
     }
 
 }

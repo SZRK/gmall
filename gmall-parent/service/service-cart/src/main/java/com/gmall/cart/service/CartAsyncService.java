@@ -7,4 +7,7 @@ public interface CartAsyncService {
 
     void insertCart(CartInfo cartInfo);
 
+    void deleteCartInfoByUserTempIdAndSkuId(String userTempId, Long skuId);
+
+    void updateCartUserId(String userId, String userTempId);
 }

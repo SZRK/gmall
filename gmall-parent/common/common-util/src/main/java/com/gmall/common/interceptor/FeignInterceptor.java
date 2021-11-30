@@ -19,7 +19,7 @@ import javax.servlet.http.HttpServletRequest;
  *   远程调用拦截器
  *
  */
-//@Component
+@Component
 public class FeignInterceptor implements RequestInterceptor {
 
     //1、办法1： 从SpringIOC容器获取   当前项目中如果没有请求对象  直接报错了
@@ -41,6 +41,11 @@ public class FeignInterceptor implements RequestInterceptor {
                 if(!StringUtils.isEmpty(userId)){
                     //2：马上要发出的请求对象
                     requestTemplate.header("userId",userId);
+                }
+                String userTempId = request.getHeader("userTempId");
+                if(!StringUtils.isEmpty(userTempId)){
+                    //2：马上要发出的请求对象
+                    requestTemplate.header("userTempId",userTempId);
                 }
             }
         }
