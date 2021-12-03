@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="service-cart" />
+        <module name="ware-manage" />
+        <module name="common-util" />
+        <module name="service-order" />
+        <module name="service-user-client" />
+        <module name="service-util" />
+        <module name="service-order-client" />
+        <module name="service-user" />
+        <module name="web-all" />
+        <module name="service-cart-client" />
+        <module name="service-item" />
+        <module name="service-product" />
+        <module name="model" />
+        <module name="service-item-client" />
+        <module name="service-list-client" />
+        <module name="service-product-client" />
+        <module name="service-list" />
+        <module name="server-gateway" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="common" target="1.8" />
+      <module name="common-util" target="1.8" />
+      <module name="gmall-parent" target="1.8" />
+      <module name="model" target="1.8" />
+      <module name="server-gateway" target="1.8" />
+      <module name="service" target="1.8" />
+      <module name="service-cart" target="1.8" />
+      <module name="service-cart-client" target="1.8" />
+      <module name="service-clien" target="1.8" />
+      <module name="service-item" target="1.8" />
+      <module name="service-item-client" target="1.8" />
+      <module name="service-list" target="1.8" />
+      <module name="service-list-client" target="1.8" />
+      <module name="service-order" target="1.8" />
+      <module name="service-order-client" target="1.8" />
+      <module name="service-product" target="1.8" />
+      <module name="service-product-client" target="1.8" />
+      <module name="service-user" target="1.8" />
+      <module name="service-user-client" target="1.8" />
+      <module name="service-util" target="1.8" />
+      <module name="ware-manage" target="1.8" />
+      <module name="web" target="1.8" />
+      <module name="web-all" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="common" options="-parameters" />
+      <module name="common-util" options="-parameters" />
+      <module name="model" options="-parameters" />
+      <module name="server-gateway" options="-parameters" />
+      <module name="service" options="-parameters" />
+      <module name="service-cart" options="-parameters" />
+      <module name="service-cart-client" options="-parameters" />
+      <module name="service-clien" options="-parameters" />
+      <module name="service-item" options="-parameters" />
+      <module name="service-item-client" options="-parameters" />
+      <module name="service-list" options="-parameters" />
+      <module name="service-list-client" options="-parameters" />
+      <module name="service-order" options="-parameters" />
+      <module name="service-order-client" options="-parameters" />
+      <module name="service-product" options="-parameters" />
+      <module name="service-product-client" options="-parameters" />
+      <module name="service-user" options="-parameters" />
+      <module name="service-user-client" options="-parameters" />
+      <module name="service-util" options="-parameters" />
+      <module name="ware-manage" options="-parameters" />
+      <module name="web" options="-parameters" />
+      <module name="web-all" options="-parameters" />
+    </option>
+  </component>
+</project>
