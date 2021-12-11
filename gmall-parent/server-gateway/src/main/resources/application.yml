@@ -28,6 +28,14 @@ spring:
           uri: lb://service-orderyc
           predicates:
             - Path=/*/order/** # 路径匹配
+        - id: service-paymentyc
+          uri: lb://service-paymentyc
+          predicates:
+            - Path=/*/payment/** # 路径匹配
+        - id: service-activityyc
+          uri: lb://service-activityyc
+          predicates:
+            - Path=/*/activity/** # 路径匹配
         - id: web-allyc
           uri: lb://web-allyc
           predicates:

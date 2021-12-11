@@ -3,7 +3,8 @@
 *.target/
 # Log file
 *.log
-
+class.*
+target.*
 # BlueJ files
 *.ctxt
 

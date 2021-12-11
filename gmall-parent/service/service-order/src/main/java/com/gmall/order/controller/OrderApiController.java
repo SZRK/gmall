@@ -1,11 +1,13 @@
 package com.gmall.order.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.gmall.common.result.Result;
 import com.gmall.common.util.AuthContextHolder;
 import com.gmall.common.util.HttpClient;
 import com.gmall.common.util.HttpClientUtil;
 import com.gmall.model.order.OrderDetail;
 import com.gmall.model.order.OrderInfo;
+import com.gmall.order.service.OrderAsyncService;
 import com.gmall.order.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/order")
@@ -26,6 +29,8 @@ public class OrderApiController {
 
     @Autowired
     private RedisTemplate redisTemplate;
+
+
 
     // 去结算
     @GetMapping("/auth/trade")
@@ -58,9 +63,24 @@ public class OrderApiController {
         }
         //  生成订单号保存订单表并保存订单详情表
         Long orderId =  orderService.saveOrderInfo(orderInfo);
-        // 删除数据库及redis中的购物项
+
         // 返回订单号
         return Result.ok(orderId);
     }
 
+    @GetMapping("/auth/getOrderInfo/{orderId}")
+    public OrderInfo getOrderInfo(@PathVariable String orderId) {
+        return orderService.getOrcderInfo(orderId);
+    }
+
+    //开始拆单
+    @PostMapping("/orderSplit")
+    public String orderSplit(Long orderId, String wareSkuMap) {
+        List<OrderInfo> subOrderInfoList = orderService.orderSplit(orderId, wareSkuMap);
+        // 将其转化为Json相应库存系统
+        List<Map> listMap = subOrderInfoList.stream().map(subOrderInfo -> {
+            return orderService.initWareData(subOrderInfo);
+        }).collect(Collectors.toList());
+        return JSONObject.toJSONString(listMap);
+    }
 }

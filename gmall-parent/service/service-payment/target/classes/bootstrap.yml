@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: service-paymentyc
+  profiles:
+    active: dev
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 120.25.152.10:8848
+      config:
+        server-addr: 120.25.152.10:8848
+        group: yc_group
+        file-extension: yml
+        namespace: 74245586-5e27-443f-9fcc-8d9dac58047e
+        ext-config:
+          - dataId: alipay.properties
+            group: yc_group
+            refresh: true

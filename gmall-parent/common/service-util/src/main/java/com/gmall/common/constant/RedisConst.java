@@ -26,6 +26,9 @@ public class RedisConst {
     public static final String userinfoKey_suffix = ":info:yc";
     public static final int USERKEY_TIMEOUT = 60 * 60 * 24 * 7;
 
+    // rabbitmq消息缓存
+    public static final String RABBITMQ_CACHE_KEY = "yc:rabbitmq:retryMessage:";
+
     //秒杀商品前缀
     public static final String SECKILL_GOODS = "yc:seckill:goods";
     public static final String SECKILL_ORDERS = "yc:seckill:orders:";

@@ -101,7 +101,7 @@ public class OrderInfo extends BaseEntity {
 
 	// 计算总价格
 	public void sumTotalAmount(){
-		BigDecimal totalAmount=new BigDecimal("0");
+		BigDecimal totalAmount=new BigDecimal("0");	
 		for (OrderDetail orderDetail : orderDetailList) {
 			totalAmount= totalAmount.add(orderDetail.getOrderPrice().multiply(new BigDecimal(orderDetail.getSkuNum())));
 		}

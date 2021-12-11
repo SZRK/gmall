@@ -21,4 +21,9 @@ public class OrderController {
         model.addAllAttributes(result.getData());
         return "order/trade";
     }
+    @GetMapping("success.html")
+    public String toSuccessPage(Model model, HttpServletRequest request) {
+        return "order/succcess";
+    }
+
 }

@@ -91,6 +91,7 @@ public class ListYcServiceImpl implements ListYcService {
                     goods.setId(skuId);
                     goods.setPrice(skuInfo.getPrice().doubleValue());
                     goods.setTitle(skuInfo.getSkuName());
+                    goods.setDefaultImg(skuInfo.getSkuDefaultImg());
                     return skuInfo;
                 }, threadPoolExecutor);
 
@@ -99,6 +100,9 @@ public class ListYcServiceImpl implements ListYcService {
         // thenApplyAsync
         CompletableFuture<Void> trademarkCompletableFuture = skuInfoCompletableFuture.thenAcceptAsync(skuInfo -> {
             BaseTrademark trademark = productFeignClient.getTrademark(skuInfo.getTmId());
+            if (null == trademark) {
+                return ;
+            }
             goods.setTmId(trademark.getId());
             goods.setTmName(trademark.getTmName());
             goods.setTmLogoUrl(trademark.getLogoUrl());

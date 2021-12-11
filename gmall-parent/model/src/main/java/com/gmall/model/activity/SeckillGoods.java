@@ -23,7 +23,9 @@ import java.util.Date;
 public class SeckillGoods extends BaseEntity {
 	
 	private static final long serialVersionUID = 1L;
-	
+
+	public static final String  ISSTATUS = "1";
+	public static final String  NOTSTATUS = "0";
 	@ApiModelProperty(value = "spu ID")
 	@TableField("spu_id")
 	private Long spuId;

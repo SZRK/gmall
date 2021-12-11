@@ -617,6 +617,7 @@
             },
 
             queue() {
+            	// 获取抢购码！
                 seckill.getSeckillSkuIdStr(this.skuId).then(response => {
                 	if(response.data.code == 200){
 					    var skuIdStr = response.data.data

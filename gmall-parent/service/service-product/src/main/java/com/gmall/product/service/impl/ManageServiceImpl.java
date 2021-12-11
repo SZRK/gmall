@@ -9,6 +9,8 @@ import com.gmall.model.product.*;
 import com.gmall.product.mapper.*;
 import com.gmall.product.service.ManageService;
 import com.gmall.product.utils.FastDFSUtils;
+import com.gmall.rabbitmq.constant.MqConst;
+import com.gmall.rabbitmq.service.RabbitMQService;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,6 +79,9 @@ public class ManageServiceImpl implements ManageService {
 
     @Autowired
     private RedissonClient redissonClient;
+
+    @Autowired
+    private RabbitMQService rabbitMQService;
 
 
     // 获取一级分类
@@ -300,6 +305,7 @@ public class ManageServiceImpl implements ManageService {
         SkuInfo skuInfo = skuInfoMapper.selectById(skuId);
         skuInfo.setIsSale(SkuInfo.ONSALE);
         // 修改
+        rabbitMQService.sentMessage(MqConst.EXCHANGE_DIRECT_GOODS, MqConst.ROUTING_GOODS_UPPER, skuId);
         skuInfoMapper.updateById(skuInfo);
     }
     // 下架
@@ -308,6 +314,8 @@ public class ManageServiceImpl implements ManageService {
         SkuInfo skuInfo = skuInfoMapper.selectById(skuId);
         skuInfo.setIsSale(SkuInfo.CANCELSALE);
         // 修改
+        rabbitMQService.sentMessage(MqConst.EXCHANGE_DIRECT_GOODS, MqConst.ROUTING_GOODS_LOWER, skuId);
+
         skuInfoMapper.updateById(skuInfo);
     }
 
